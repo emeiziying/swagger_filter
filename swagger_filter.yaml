@@ -1,0 +1,5 @@
+swaggers:
+  - source: ./swaggers/smartOpsPro.json
+    include_paths: ["/workTeam/add"]
+    output: smartOpsPro.filtered.json
+output_dir: ./filtered 

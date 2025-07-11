@@ -1,0 +1,20 @@
+targets:
+  $default:
+    builders:
+      swagger_filter|swagger_filter:
+        enabled: true
+
+builders:
+  swagger_filter:
+    import: "package:swagger_filter/builder.dart"
+    builder_factories: ["swaggerFilterBuilder"]
+    build_extensions: {".dart": [".swagger_filtered"]}
+    auto_apply: root_package
+    build_to: source
+    defaults:
+      options:
+        output_dir: "./filtered"
+        swaggers:
+          - source: "./swaggers/smartOpsPro.json"
+            include_paths: ["/workTeam/add"]
+            output: "smartOpsPro.filtered.json" 

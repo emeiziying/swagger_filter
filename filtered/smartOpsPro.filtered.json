@@ -1,0 +1,149 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "智能运维系统接口文档",
+    "description": "智能运维系统接口文档",
+    "contact": {
+      "name": "boeet"
+    },
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8888/smartOpsPro"
+    }
+  ],
+  "security": [
+    {
+      "apikey": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "班组管理",
+      "description": "班组管理",
+      "x-order": 101
+    }
+  ],
+  "paths": {
+    "/workTeam/add": {
+      "post": {
+        "tags": [
+          "班组管理"
+        ],
+        "summary": "班组管理新增",
+        "operationId": "smartOpsProWorkTeamAdd",
+        "parameters": [
+          {
+            "name": "workTeamName",
+            "in": "query",
+            "description": "班组名称",
+            "required": true,
+            "schema": {
+              "maxLength": 20,
+              "minLength": 0,
+              "type": "string",
+              "description": "班组名称"
+            }
+          },
+          {
+            "name": "departmentId",
+            "in": "query",
+            "description": "部门ID",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "部门ID"
+            }
+          },
+          {
+            "name": "scheduleIds",
+            "in": "query",
+            "description": "班次ids",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "班次ids"
+            }
+          },
+          {
+            "name": "sign",
+            "in": "query",
+            "description": "签名",
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AjaxResultString"
+                }
+              }
+            }
+          }
+        },
+        "x-order": 2
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AjaxResultString": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "状态码",
+            "format": "int32"
+          },
+          "msg": {
+            "type": "string",
+            "description": "消息"
+          },
+          "data": {
+            "type": "string",
+            "description": "对象"
+          }
+        },
+        "description": "接口返回"
+      }
+    },
+    "securitySchemes": {
+      "apikey": {
+        "type": "apiKey",
+        "name": "Authorization",
+        "in": "header"
+      }
+    }
+  },
+  "x-openapi": {
+    "x-setting": {
+      "customCode": 200,
+      "language": "zh-CN",
+      "enableSwaggerModels": true,
+      "swaggerModelName": "实体类列表",
+      "enableReloadCacheParameter": false,
+      "enableAfterScript": true,
+      "enableDocumentManage": true,
+      "enableVersion": false,
+      "enableRequestCache": true,
+      "enableFilterMultipartApis": false,
+      "enableFilterMultipartApiMethodType": "POST",
+      "enableHost": false,
+      "enableHostText": "",
+      "enableDynamicParameter": false,
+      "enableDebug": true,
+      "enableFooter": true,
+      "enableFooterCustom": false,
+      "enableSearch": true,
+      "enableOpenApi": true,
+      "enableHomeCustom": false,
+      "enableGroup": true,
+      "enableResponseCode": true
+    },
+    "x-markdownFiles": []
+  }
+}

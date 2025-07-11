@@ -1,0 +1,20 @@
+# Flutter项目示例配置
+swaggers:
+  # 生产API - 只要用户相关接口
+  - source: https://api.yourapp.com/swagger.json
+    include_tags: ["user", "auth", "profile"]
+    exclude_paths: ["/admin", "/internal"]
+    output: user_api.json
+    
+  # 管理后台API - 只要管理相关接口  
+  - source: https://admin-api.yourapp.com/swagger.json
+    include_tags: ["admin", "dashboard"]
+    output: admin_api.json
+    
+  # 本地开发API - 排除生产环境接口
+  - source: ./docs/dev_api.yaml
+    exclude_tags: ["production-only"]
+    include_paths: ["/dev", "/test"]
+    output: dev_api.json
+
+output_dir: ./lib/generated/api 
