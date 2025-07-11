@@ -2,7 +2,19 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:yaml/yaml.dart';
 
-/// 读取 swagger 文件（支持 JSON/YAML）
+/// Loads a swagger/OpenAPI document from a file path.
+/// 
+/// Supports both JSON and YAML formats. The format is auto-detected based on
+/// file extension (.yaml, .yml for YAML, everything else treated as JSON).
+/// 
+/// Example:
+/// ```dart
+/// final swagger = loadSwagger('api.json');
+/// print(swagger['info']['title']);
+/// ```
+/// 
+/// Throws [FileSystemException] if the file doesn't exist.
+/// Throws [FormatException] if the file content is invalid.
 Map<String, dynamic> loadSwagger(String path) {
   final content = File(path).readAsStringSync();
   if (path.endsWith('.yaml') || path.endsWith('.yml')) {
@@ -12,7 +24,26 @@ Map<String, dynamic> loadSwagger(String path) {
   }
 }
 
-/// 过滤 paths
+/// Filters swagger paths based on include criteria.
+/// 
+/// This is a simple filtering function that supports basic include-only logic.
+/// For more advanced filtering with exclude support, use [filterPathsAdvanced].
+/// 
+/// Parameters:
+/// - [paths]: The paths section from a swagger document
+/// - [includePaths]: List of path patterns to include (substring matching)
+/// - [includeTags]: List of tags to include
+/// 
+/// Returns a new paths map containing only the filtered paths.
+/// 
+/// Example:
+/// ```dart
+/// final filtered = filterPaths(
+///   swagger['paths'],
+///   includePaths: ['/api/v1'],
+///   includeTags: ['public'],
+/// );
+/// ```
 Map<String, dynamic> filterPaths(
   Map<String, dynamic> paths, {
   List<String>? includePaths,
@@ -39,7 +70,42 @@ Map<String, dynamic> filterPaths(
   return result;
 }
 
-/// 高级过滤 paths，支持include/exclude，include优先
+/// Advanced filtering function with include/exclude support and priority logic.
+/// 
+/// This function provides comprehensive filtering capabilities:
+/// - Include patterns take priority over exclude patterns
+/// - Both path-based and tag-based filtering
+/// - Substring matching for paths
+/// - Exact matching for tags
+/// 
+/// Priority Logic:
+/// 1. If [includePaths] is specified, only check include conditions for paths
+/// 2. If [includeTags] is specified, only check include conditions for tags
+/// 3. Exclude conditions are only applied when corresponding include conditions are not specified
+/// 
+/// Parameters:
+/// - [paths]: The paths section from a swagger document
+/// - [includePaths]: List of path patterns to include (takes priority)
+/// - [excludePaths]: List of path patterns to exclude (ignored if includePaths is set)
+/// - [includeTags]: List of tags to include (takes priority)
+/// - [excludeTags]: List of tags to exclude (ignored if includeTags is set)
+/// 
+/// Example:
+/// ```dart
+/// // Include only specific paths, exclude sensitive tags
+/// final filtered = filterPathsAdvanced(
+///   swagger['paths'],
+///   includePaths: ['/api/v1', '/public'],
+///   excludeTags: ['internal', 'admin'],
+/// );
+/// 
+/// // Include takes priority - this will include /admin paths despite exclude
+/// final filtered2 = filterPathsAdvanced(
+///   swagger['paths'],
+///   includePaths: ['/admin'],
+///   excludePaths: ['/admin'], // This will be ignored
+/// );
+/// ```
 Map<String, dynamic> filterPathsAdvanced(
   Map<String, dynamic> paths, {
   List<String>? includePaths,
@@ -80,7 +146,35 @@ Map<String, dynamic> filterPathsAdvanced(
   return result;
 }
 
-/// 组装新 swagger 文档
+/// Builds a complete filtered swagger document with automatic cleanup.
+/// 
+/// This function takes the original swagger document and filtered paths,
+/// then creates a new swagger document with:
+/// - Only the filtered paths
+/// - Only tags that are actually used in the filtered paths
+/// - Only schemas/definitions that are referenced (with recursive dependency resolution)
+/// 
+/// The function automatically detects OpenAPI version:
+/// - OpenAPI 3.0+: Cleans up components/schemas
+/// - OpenAPI 2.0: Cleans up definitions
+/// 
+/// Parameters:
+/// - [swagger]: The complete original swagger document
+/// - [filteredPaths]: The filtered paths (typically from [filterPaths] or [filterPathsAdvanced])
+/// 
+/// Returns a new swagger document with unused elements removed.
+/// 
+/// Example:
+/// ```dart
+/// final swagger = loadSwagger('api.json');
+/// final filtered = filterPathsAdvanced(swagger['paths'], includePaths: ['/users']);
+/// final cleanSwagger = buildFilteredSwagger(swagger, filtered);
+/// 
+/// // cleanSwagger now contains only:
+/// // - paths starting with '/users'
+/// // - tags used by those paths  
+/// // - schemas referenced by those paths (recursively)
+/// ```
 Map<String, dynamic> buildFilteredSwagger(
   Map<String, dynamic> swagger,
   Map<String, dynamic> filteredPaths,
@@ -192,7 +286,21 @@ Map<String, dynamic> buildFilteredSwagger(
   return result;
 }
 
-/// 保存为 JSON
+/// Saves a swagger document to a JSON file with pretty formatting.
+/// 
+/// The output is formatted with 2-space indentation for readability.
+/// 
+/// Parameters:
+/// - [swagger]: The swagger document to save
+/// - [path]: The file path where to save the document
+/// 
+/// Example:
+/// ```dart
+/// final swagger = {'openapi': '3.0.0', 'info': {'title': 'API'}};
+/// saveSwagger(swagger, 'output/api.json');
+/// ```
+/// 
+/// Throws [FileSystemException] if the file cannot be written.
 void saveSwagger(Map<String, dynamic> swagger, String path) {
   File(path).writeAsStringSync(JsonEncoder.withIndent('  ').convert(swagger));
 }
