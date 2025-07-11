@@ -1,20 +1,43 @@
-# Flutter项目示例配置
-swaggers:
-  # 生产API - 只要用户相关接口
-  - source: https://api.yourapp.com/swagger.json
-    include_tags: ["user", "auth", "profile"]
-    exclude_paths: ["/admin", "/internal"]
-    output: user_api.json
-    
-  # 管理后台API - 只要管理相关接口  
-  - source: https://admin-api.yourapp.com/swagger.json
-    include_tags: ["admin", "dashboard"]
-    output: admin_api.json
-    
-  # 本地开发API - 排除生产环境接口
-  - source: ./docs/dev_api.yaml
-    exclude_tags: ["production-only"]
-    include_paths: ["/dev", "/test"]
-    output: dev_api.json
+# Flutter项目中的 build.yaml 配置示例
+# 展示 swagger_filter 与 swagger_dart_code_generator 的正确执行顺序
 
-output_dir: ./lib/generated/api 
+targets:
+  $default:
+    builders:
+      # 1. 首先执行 swagger_filter 过滤API
+      swagger_filter:
+        enabled: true
+        options:
+          output_dir: "./lib/generated/swagger_filtered"
+      
+      # 2. 然后执行 swagger_dart_code_generator 生成代码
+      swagger_dart_code_generator|swagger:
+        enabled: true
+        options:
+          # 使用过滤后的swagger文件
+          input_folder: "./lib/generated/swagger_filtered"
+          output_folder: "./lib/generated/swagger_api"
+          template_folder: "./swagger_templates"
+        generate_for:
+          # 处理所有过滤后的swagger文件
+          - "lib/generated/swagger_filtered/*.json"
+
+# swagger_filter.yaml 配置示例
+# swaggers:
+#   - source: "https://api.example.com/swagger.json"
+#     output: "user_api.json"
+#     include_paths:
+#       - "/api/v1/users"
+#       - "/api/v1/auth"
+#   
+#   - source: "https://api.example.com/admin-swagger.json"
+#     output: "admin_api.json"
+#     include_paths:
+#       - "/api/v1/admin"
+#       
+# output_dir: "./lib/generated/swagger_filtered"
+
+# 执行流程:
+# 1. dart run build_runner build
+# 2. swagger_filter 过滤API → lib/generated/swagger_filtered/*.json
+# 3. swagger_dart_code_generator 生成代码 → lib/generated/swagger_api/ 

@@ -1,0 +1,108 @@
+# 完整的 Swagger 处理工作流配置
+# 文件: build.yaml
+
+targets:
+  $default:
+    builders:
+      # 阶段1: swagger_filter - 过滤和清理API文档
+      swagger_filter:
+        enabled: true
+        options:
+          output_dir: "./swagger_filtered"
+      
+      # 阶段2: swagger_dart_code_generator - 生成Dart代码
+      swagger_dart_code_generator|swagger:
+        enabled: true
+        options:
+          input_folder: "./swagger_filtered"
+          output_folder: "./lib/api"
+          separate_models: true
+          use_default_null_for_lists: true
+          build_only_models: false
+          default_values_map:
+            - type_name: int
+              default_value: "0"
+        generate_for:
+          include:
+            - "swagger_filtered/**"
+
+---
+# 文件: swagger_filter.yaml
+
+swaggers:
+  # 用户API - 只保留核心用户功能
+  - source: "https://api.example.com/v1/swagger.json"
+    output: "user_api.json"
+    include_paths:
+      - "/api/v1/auth/login"
+      - "/api/v1/auth/logout" 
+      - "/api/v1/users/profile"
+      - "/api/v1/users/settings"
+    exclude_tags: ["admin", "internal"]
+    
+  # 商品API - 只保留公开商品接口
+  - source: "https://api.example.com/v1/swagger.json"
+    output: "product_api.json"
+    include_paths:
+      - "/api/v1/products"
+      - "/api/v1/categories"
+    include_tags: ["public"]
+    
+  # 订单API - 排除敏感管理接口
+  - source: "https://api.example.com/v1/swagger.json"
+    output: "order_api.json"
+    include_paths:
+      - "/api/v1/orders"
+      - "/api/v1/cart"
+    exclude_paths:
+      - "/api/v1/orders/admin"
+      - "/api/v1/orders/reports"
+
+output_dir: "./swagger_filtered"
+
+---
+# 执行流程和结果
+
+## 执行命令
+```bash
+dart run build_runner build --delete-conflicting-outputs
+```
+
+## 执行顺序
+1. **swagger_filter** (第一阶段)
+   - 读取 swagger_filter.yaml 配置
+   - 从远程/本地加载原始Swagger文档
+   - 根据include_paths/exclude_paths过滤API端点
+   - 生成过滤后的文档到 ./swagger_filtered/
+   
+2. **swagger_dart_code_generator** (第二阶段)
+   - 读取 ./swagger_filtered/ 中的过滤后文档
+   - 生成对应的Dart模型和API客户端代码
+   - 输出到 ./lib/api/ 目录
+
+## 文件结构
+```
+project/
+├── build.yaml                    # build_runner配置
+├── swagger_filter.yaml           # swagger过滤配置
+├── swagger_filtered/              # 过滤后的swagger文档
+│   ├── user_api.json
+│   ├── product_api.json
+│   └── order_api.json
+└── lib/
+    └── api/                       # 生成的Dart代码
+        ├── user_api.dart
+        ├── product_api.dart
+        ├── order_api.dart
+        └── models/
+            ├── user.dart
+            ├── product.dart
+            └── order.dart
+```
+
+## 优势
+- 🔒 **安全性**: 只生成需要的API，避免暴露敏感接口
+- 📦 **体积优化**: 减少生成代码的大小
+- 🚀 **性能**: 较少的API意味着更快的编译和运行
+- 🎯 **专注性**: 每个模块只包含相关的API功能
+- 🔄 **自动化**: 一次配置，自动化处理完整工作流 

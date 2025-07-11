@@ -112,7 +112,7 @@ void main() {
     test('filterPaths - mixed path and tag filtering', () {
       final filtered = filterPaths(
         sampleOpenAPI3['paths'] as Map<String, dynamic>,
-        includePaths: ['/user', '/admin'],
+        includePaths: ['/user/profile', '/admin/users'],
         includeTags: ['user'],
       );
       expect(filtered.keys, contains('/user/profile'));
@@ -133,7 +133,7 @@ void main() {
     test('filterPathsAdvanced - exclude paths', () {
       final filtered = filterPathsAdvanced(
         sampleOpenAPI3['paths'] as Map<String, dynamic>,
-        excludePaths: ['/admin'],
+        excludePaths: ['/admin/users'],
       );
       expect(filtered.keys, containsAll(['/user/profile', '/public/health']));
       expect(filtered.keys, isNot(contains('/admin/users')));
@@ -154,11 +154,114 @@ void main() {
       final filtered = filterPathsAdvanced(
         sampleOpenAPI3['paths'] as Map<String, dynamic>,
         includeTags: ['user', 'public'],
-        excludePaths: ['/public'],
+        excludePaths: ['/public/health'],
       );
       expect(filtered.keys, contains('/user/profile'));
       expect(filtered.keys, isNot(contains('/public/health')));
       expect(filtered.keys, hasLength(1));
+    });
+  });
+
+  group('精准路径匹配测试', () {
+    test('精确路径匹配', () {
+      final paths = {
+        '/users': {'get': {'summary': 'Get users'}},
+        '/users/123': {'get': {'summary': 'Get user by ID'}},
+        '/user': {'get': {'summary': 'Get current user'}},
+        '/users-admin': {'get': {'summary': 'Admin users'}},
+      };
+
+      // 精确匹配 "/users" 应该只匹配 "/users"
+      final filtered = filterPathsAdvanced(
+        paths,
+        includePaths: ['/users'],
+      );
+
+      expect(filtered.keys, contains('/users'));
+      expect(filtered.keys, isNot(contains('/users/123')));
+      expect(filtered.keys, isNot(contains('/user')));
+      expect(filtered.keys, isNot(contains('/users-admin')));
+    });
+
+    test('精确匹配验证', () {
+      final paths = {
+        '/api': {'get': {'summary': 'API root'}},
+        '/api/v1/users': {'get': {'summary': 'V1 users'}},
+        '/api/v2/users': {'get': {'summary': 'V2 users'}},
+        '/api-docs': {'get': {'summary': 'API docs'}},
+        '/apikey': {'get': {'summary': 'API key'}},
+      };
+
+      // "/api" 应该只匹配 "/api"，不匹配子路径
+      final filtered = filterPathsAdvanced(
+        paths,
+        includePaths: ['/api'],
+      );
+
+      expect(filtered.keys, contains('/api'));
+      expect(filtered.keys, isNot(contains('/api/v1/users')));
+      expect(filtered.keys, isNot(contains('/api/v2/users')));
+      expect(filtered.keys, isNot(contains('/api-docs')));
+      expect(filtered.keys, isNot(contains('/apikey')));
+    });
+
+    test('多个精准路径匹配', () {
+      final paths = {
+        '/users': {'get': {'summary': 'Users'}},
+        '/users/profile': {'get': {'summary': 'User profile'}},
+        '/admin': {'get': {'summary': 'Admin'}},
+        '/admin/users': {'get': {'summary': 'Admin users'}},
+        '/public': {'get': {'summary': 'Public'}},
+        '/public-api': {'get': {'summary': 'Public API'}},
+      };
+
+      final filtered = filterPathsAdvanced(
+        paths,
+        includePaths: ['/users', '/admin'],
+      );
+
+      expect(filtered.keys, containsAll(['/users', '/admin']));
+      expect(filtered.keys, isNot(contains('/users/profile')));
+      expect(filtered.keys, isNot(contains('/admin/users')));
+      expect(filtered.keys, isNot(contains('/public')));
+      expect(filtered.keys, isNot(contains('/public-api')));
+    });
+
+    test('根路径匹配', () {
+      final paths = {
+        '/': {'get': {'summary': 'Root'}},
+        '/health': {'get': {'summary': 'Health check'}},
+        '/api': {'get': {'summary': 'API'}},
+      };
+
+      // 根路径应该只匹配 "/"
+      final filtered = filterPathsAdvanced(
+        paths,
+        includePaths: ['/'],
+      );
+
+      expect(filtered.keys, contains('/'));
+      expect(filtered.keys, isNot(contains('/health')));
+      expect(filtered.keys, isNot(contains('/api')));
+    });
+
+    test('exclude路径精准匹配', () {
+      final paths = {
+        '/users': {'get': {'summary': 'Users'}},
+        '/users/admin': {'get': {'summary': 'User admin'}},
+        '/admin': {'get': {'summary': 'Admin'}},
+        '/admin/config': {'get': {'summary': 'Admin config'}},
+        '/admins': {'get': {'summary': 'Admins list'}},
+      };
+
+      // 排除 "/admin" 应该只排除 "/admin"
+      final filtered = filterPathsAdvanced(
+        paths,
+        excludePaths: ['/admin'],
+      );
+
+      expect(filtered.keys, containsAll(['/users', '/users/admin', '/admin/config', '/admins']));
+      expect(filtered.keys, isNot(contains('/admin')));
     });
   });
 
@@ -435,26 +538,39 @@ output_dir: ./filtered_test
 
     test('exclude sensitive endpoints', () {
       final allPaths = swagger['paths'] as Map<String, dynamic>;
-      final filtered = filterPathsAdvanced(
-        allPaths,
-        excludePaths: ['/admin', '/internal', '/debug'],
-      );
       
-      // Should have fewer paths than original
-      expect(filtered.keys.length, lessThanOrEqualTo(allPaths.keys.length));
+      // 找到实际存在的路径进行精确排除测试
+      final pathsToExclude = allPaths.keys.where((path) => 
+        path.contains('admin') || path.contains('internal') || path.contains('debug')
+      ).toList();
       
-      // Should not contain excluded patterns
-      for (final path in filtered.keys) {
-        expect(path, isNot(contains('/admin')));
-        expect(path, isNot(contains('/internal')));
-        expect(path, isNot(contains('/debug')));
+      if (pathsToExclude.isNotEmpty) {
+        final filtered = filterPathsAdvanced(
+          allPaths,
+          excludePaths: pathsToExclude,
+        );
+        
+        // Should have fewer paths than original
+        expect(filtered.keys.length, lessThan(allPaths.keys.length));
+        
+        // Should not contain any of the excluded paths
+        for (final excludedPath in pathsToExclude) {
+          expect(filtered.keys, isNot(contains(excludedPath)));
+        }
+      } else {
+        // If no admin/internal/debug paths exist, just verify exclusion works
+        final filtered = filterPathsAdvanced(
+          allPaths,
+          excludePaths: ['/nonexistent'],
+        );
+        expect(filtered.keys.length, equals(allPaths.keys.length));
       }
     });
 
     test('full workflow - filter and save', () {
       final filtered = filterPathsAdvanced(
         swagger['paths'] as Map<String, dynamic>,
-        includePaths: ['/workTeam'],
+        includePaths: ['/workTeam/add'],  // 使用精确的路径
       );
       
       final newSwagger = buildFilteredSwagger(swagger, filtered);

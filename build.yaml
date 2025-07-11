@@ -1,20 +1,21 @@
 targets:
   $default:
     builders:
-      swagger_filter|swagger_filter:
+      swagger_filter:
         enabled: true
 
 builders:
   swagger_filter:
     import: "package:swagger_filter/builder.dart"
     builder_factories: ["swaggerFilterBuilder"]
-    build_extensions: {".dart": [".swagger_filtered"]}
-    auto_apply: root_package
+    build_extensions: {
+      "$lib$": [".swagger_filter_done"]
+    }
+    auto_apply: dependents
     build_to: source
+    runs_before: ["swagger_dart_code_generator|swagger"]
     defaults:
       options:
         output_dir: "./filtered"
-        swaggers:
-          - source: "https://raw.githubusercontent.com/epam-cross-platform-lab/swagger-dart-code-generator/master/example/input_folder/pet_service_json.json"
-            include_paths: ["/pet"]
-            output: "pet_service.json" 
+        # 移除具体的swagger配置，用户必须在自己的项目中明确配置
+        # swaggers: []  # 空数组，要求用户明确配置 

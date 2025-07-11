@@ -1,0 +1,79 @@
+# Builder 命名格式示例
+
+## 1. 基本格式解释
+# package_name|builder_name
+# └─ 包名 ──┘└─ 构建器名 ─┘
+
+## 2. 我们的swagger_filter包
+targets:
+  $default:
+    builders:
+      # swagger_filter 包中的 swagger_filter 构建器
+      swagger_filter|swagger_filter:
+        options:
+          swaggers: [...]
+
+## 3. 其他包的实际例子
+targets:
+  $default: 
+    builders:
+      # json_annotation包中的json_serializable构建器
+      json_annotation|json_serializable:
+        options:
+          # json_serializable的配置
+      
+      # built_value包中的built_value构建器  
+      built_value|built_value:
+        options:
+          # built_value的配置
+          
+      # retrofit包中的retrofit构建器
+      retrofit|retrofit:
+        options:
+          # retrofit的配置
+
+## 4. 假设swagger_filter包有多个构建器的情况
+builders:
+  # 定义多个构建器
+  swagger_filter:           # 过滤swagger
+    import: "package:swagger_filter/builder.dart"
+    builder_factories: ["swaggerFilterBuilder"]
+    
+  swagger_codegen:          # 生成Dart代码
+    import: "package:swagger_filter/codegen.dart"
+    builder_factories: ["swaggerCodegenBuilder"]
+    
+  swagger_docs:             # 生成文档
+    import: "package:swagger_filter/docs.dart"
+    builder_factories: ["swaggerDocsBuilder"]
+
+targets:
+  $default:
+    builders:
+      # 使用不同的构建器
+      swagger_filter|swagger_filter:    # 过滤功能
+        options:
+          swaggers: [...]
+          
+      swagger_filter|swagger_codegen:   # 代码生成功能
+        options:
+          output_dir: "lib/generated"
+          
+      swagger_filter|swagger_docs:      # 文档生成功能
+        options:
+          docs_dir: "docs/api"
+
+## 5. 为什么不能省略包名？
+# ❌ 这样写是无效的
+targets:
+  $default:
+    builders:
+      swagger_filter:  # build_runner不知道这是哪个包的builder
+        options: ...
+
+# ✅ 必须明确指定包名
+targets:
+  $default:
+    builders:
+      swagger_filter|swagger_filter:  # 明确来自swagger_filter包
+        options: ... 

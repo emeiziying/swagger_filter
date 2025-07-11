@@ -31,7 +31,7 @@ Map<String, dynamic> loadSwagger(String path) {
 /// 
 /// Parameters:
 /// - [paths]: The paths section from a swagger document
-/// - [includePaths]: List of path patterns to include (substring matching)
+/// - [includePaths]: List of path patterns to include (exact matching only)
 /// - [includeTags]: List of tags to include
 /// 
 /// Returns a new paths map containing only the filtered paths.
@@ -51,7 +51,7 @@ Map<String, dynamic> filterPaths(
 }) {
   final result = <String, dynamic>{};
   paths.forEach((path, methods) {
-    if (includePaths != null && !includePaths.any((p) => path.contains(p))) {
+    if (includePaths != null && !includePaths.any((p) => path == p)) {
       return;
     }
     // 进一步按 tag 过滤
@@ -75,7 +75,7 @@ Map<String, dynamic> filterPaths(
 /// This function provides comprehensive filtering capabilities:
 /// - Include patterns take priority over exclude patterns
 /// - Both path-based and tag-based filtering
-/// - Substring matching for paths
+/// - Exact matching for paths
 /// - Exact matching for tags
 /// 
 /// Priority Logic:
@@ -117,10 +117,10 @@ Map<String, dynamic> filterPathsAdvanced(
   paths.forEach((path, methods) {
     // includePaths优先 - 如果有includePaths，只检查include条件
     if (includePaths != null) {
-      if (!includePaths.any((p) => path.contains(p))) {
+      if (!includePaths.any((p) => path == p)) {
         return;
       }
-    } else if (excludePaths != null && excludePaths.any((p) => path.contains(p))) {
+    } else if (excludePaths != null && excludePaths.any((p) => path == p)) {
       // 只有在没有includePaths时才检查excludePaths
       return;
     }

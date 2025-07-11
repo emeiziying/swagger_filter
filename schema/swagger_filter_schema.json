@@ -1,0 +1,128 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Swagger Filter Configuration",
+  "description": "Configuration schema for swagger_filter package",
+  "type": "object",
+  "properties": {
+    "output_dir": {
+      "type": "string",
+      "description": "Directory where filtered swagger files will be saved",
+      "default": "./filtered",
+      "examples": ["./filtered", "./output", "./generated"]
+    },
+    "swaggers": {
+      "type": "array",
+      "description": "List of swagger sources to process",
+      "items": {
+        "$ref": "#/definitions/SwaggerSource"
+      },
+      "minItems": 1
+    }
+  },
+  "required": ["swaggers"],
+  "additionalProperties": false,
+  "definitions": {
+    "SwaggerSource": {
+      "type": "object",
+      "description": "Configuration for a single swagger source",
+      "properties": {
+        "source": {
+          "type": "string",
+          "description": "Path or URL to the swagger file",
+          "examples": [
+            "./api.json",
+            "https://api.example.com/swagger.json",
+            "../shared/swagger.yaml"
+          ]
+        },
+        "output": {
+          "type": "string",
+          "description": "Output filename for the filtered swagger",
+          "examples": [
+            "filtered_api.json",
+            "public_api.json"
+          ]
+        },
+        "include_paths": {
+          "type": "array",
+          "description": "List of API paths to include (exact match only)",
+          "items": {
+            "type": "string",
+            "pattern": "^/.*",
+            "examples": [
+              "/users",
+              "/api/v1/products",
+              "/public/health"
+            ]
+          },
+          "uniqueItems": true
+        },
+        "exclude_paths": {
+          "type": "array",
+          "description": "List of API paths to exclude (exact match only)",
+          "items": {
+            "type": "string",
+            "pattern": "^/.*",
+            "examples": [
+              "/admin",
+              "/internal/debug",
+              "/private/config"
+            ]
+          },
+          "uniqueItems": true
+        },
+        "include_tags": {
+          "type": "array",
+          "description": "List of OpenAPI tags to include",
+          "items": {
+            "type": "string",
+            "examples": [
+              "public",
+              "user",
+              "product"
+            ]
+          },
+          "uniqueItems": true
+        },
+        "exclude_tags": {
+          "type": "array",
+          "description": "List of OpenAPI tags to exclude",
+          "items": {
+            "type": "string",
+            "examples": [
+              "admin",
+              "internal",
+              "debug"
+            ]
+          },
+          "uniqueItems": true
+        }
+      },
+      "required": ["source"],
+      "additionalProperties": false,
+      "anyOf": [
+        {"required": ["include_paths"]},
+        {"required": ["exclude_paths"]},
+        {"required": ["include_tags"]},
+        {"required": ["exclude_tags"]}
+      ]
+    }
+  },
+  "examples": [
+    {
+      "output_dir": "./filtered",
+      "swaggers": [
+        {
+          "source": "./api.json",
+          "include_paths": ["/users", "/products"],
+          "output": "public_api.json"
+        },
+        {
+          "source": "https://api.example.com/swagger.json",
+          "exclude_tags": ["admin", "internal"],
+          "output": "external_api.json"
+        }
+      ]
+    }
+  ]
+} 

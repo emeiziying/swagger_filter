@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:convert';
 import 'package:build/build.dart';
 import 'package:path/path.dart' as p;
+import 'package:yaml/yaml.dart';
 import 'config.dart';
 import 'loader.dart';
 import 'swagger_filter.dart';
@@ -14,29 +15,35 @@ class SwaggerFilterBuilder implements Builder {
 
   @override
   final buildExtensions = const {
-    '.dart': ['.swagger_filtered']
+    r'$lib$': ['.swagger_filter_done']
   };
 
   @override
   Future<void> build(BuildStep buildStep) async {
+    // 只处理特定的配置文件
+    final inputFile = buildStep.inputId.path;
+    
+    if (!_isSwaggerFilterConfig(inputFile)) {
+      return;
+    }
+    
     try {
-      // 验证配置
-      final config = _parseConfig();
+      // 从YAML文件或build options读取配置
+      final config = await _parseConfigFromInput(buildStep);
+      
       final validation = SwaggerFilterValidator.validateConfig(config);
       
       if (!validation.isValid) {
         for (final error in validation.errors) {
-          log.severe('Configuration error: $error');
+          log.severe('swagger_filter: Configuration error: $error');
         }
         throw BuildException('Invalid swagger_filter configuration');
       }
       
       // 显示警告
       for (final warning in validation.warnings) {
-        log.warning('Configuration warning: $warning');
+        log.warning('swagger_filter: $warning');
       }
-      
-      log.info('Processing ${config.swaggers.length} swagger source(s)...');
       
       // 处理每个swagger源
       for (int i = 0; i < config.swaggers.length; i++) {
@@ -44,15 +51,72 @@ class SwaggerFilterBuilder implements Builder {
         await _processSwaggerSource(swaggerCfg, config.outputDir, i + 1, config.swaggers.length);
       }
       
-      log.info('✅ Swagger filtering completed successfully!');
-      
-    } catch (e) {
-      log.severe('Swagger filtering failed: $e');
+    } catch (e, stackTrace) {
+      log.severe('swagger_filter: Build failed: $e');
+      log.fine('swagger_filter: Stack trace: $stackTrace');
       rethrow;
     }
   }
   
-  SwaggerFilterConfig _parseConfig() {
+  bool _isSwaggerFilterConfig(String filePath) {
+    // 处理 lib 目录的触发
+    return filePath.endsWith(r'$lib$');
+  }
+  
+  Future<SwaggerFilterConfig> _parseConfigFromInput(BuildStep buildStep) async {
+    // 首先尝试查找 swagger_filter.yaml 文件
+    try {
+      final yamlAssetId = AssetId(buildStep.inputId.package, 'swagger_filter.yaml');
+      if (await buildStep.canRead(yamlAssetId)) {
+        final yamlContent = await buildStep.readAsString(yamlAssetId);
+        return await _parseConfigFromYamlContent(yamlContent);
+      }
+    } catch (e) {
+      log.fine('swagger_filter: Error reading swagger_filter.yaml: $e');
+    }
+    
+    // 如果没有 swagger_filter.yaml，从 build options 读取配置
+    return _parseConfigFromBuildOptions();
+  }
+  
+  Future<SwaggerFilterConfig> _parseConfigFromYamlFile(BuildStep buildStep) async {
+    final yamlContent = await buildStep.readAsString(buildStep.inputId);
+    return await _parseConfigFromYamlContent(yamlContent);
+  }
+  
+  Future<SwaggerFilterConfig> _parseConfigFromYamlContent(String yamlContent) async {
+    final yamlDoc = loadYaml(yamlContent);
+    
+    if (yamlDoc == null) {
+      throw BuildException('swagger_filter.yaml is empty or invalid');
+    }
+    
+    final Map<String, dynamic> config = Map<String, dynamic>.from(yamlDoc);
+    
+    final swaggersConfig = config['swaggers'] as List?;
+    final outputDir = config['output_dir'] as String?;
+    
+    if (swaggersConfig == null || swaggersConfig.isEmpty) {
+      throw BuildException(
+        'No swaggers configured in swagger_filter.yaml. Please add swagger sources under swaggers'
+      );
+    }
+    
+    try {
+      final swaggers = swaggersConfig
+          .map((swaggerMap) => SwaggerSourceConfig.fromMap(Map<String, dynamic>.from(swaggerMap)))
+          .toList();
+      
+      return SwaggerFilterConfig(
+        swaggers: swaggers,
+        outputDir: outputDir,
+      );
+    } catch (e) {
+      throw BuildException('Invalid swagger configuration format in swagger_filter.yaml: $e');
+    }
+  }
+  
+  SwaggerFilterConfig _parseConfigFromBuildOptions() {
     final swaggersConfig = options.config['swaggers'] as List?;
     final outputDir = options.config['output_dir'] as String?;
     
@@ -75,6 +139,7 @@ class SwaggerFilterBuilder implements Builder {
       throw BuildException('Invalid swagger configuration format: $e');
     }
   }
+
   
   Future<void> _processSwaggerSource(
     SwaggerSourceConfig swaggerCfg, 
@@ -83,7 +148,6 @@ class SwaggerFilterBuilder implements Builder {
     int total
   ) async {
     final prefix = '[$current/$total]';
-    log.info('$prefix Processing: ${swaggerCfg.source}');
     
     try {
       // 加载swagger
@@ -93,11 +157,12 @@ class SwaggerFilterBuilder implements Builder {
       final swaggerValidation = SwaggerFilterValidator.validateSwaggerDocument(swagger);
       if (!swaggerValidation.isValid) {
         for (final error in swaggerValidation.errors) {
-          log.warning('$prefix Swagger document issue: $error');
+          log.warning('swagger_filter: $prefix $error');
         }
       }
       
       // 过滤
+      final originalPaths = swagger['paths'] as Map<String, dynamic>;
       final filtered = filterPathsAdvanced(
         swagger['paths'] as Map<String, dynamic>,
         includePaths: swaggerCfg.includePaths,
@@ -106,8 +171,10 @@ class SwaggerFilterBuilder implements Builder {
         excludeTags: swaggerCfg.excludeTags,
       );
       
+      log.info('swagger_filter: $prefix ${swaggerCfg.source} → ${originalPaths.length} → ${filtered.length} paths');
+      
       if (filtered.isEmpty) {
-        log.warning('$prefix No paths matched the filtering criteria');
+        log.warning('swagger_filter: $prefix No paths matched filters for ${swaggerCfg.source}');
         return;
       }
       
@@ -125,18 +192,11 @@ class SwaggerFilterBuilder implements Builder {
         JsonEncoder.withIndent('  ').convert(newSwagger),
       );
       
-      // 统计信息
-      final originalPaths = (swagger['paths'] as Map).length;
-      final filteredPaths = filtered.length;
-      final originalTags = (swagger['tags'] as List?)?.length ?? 0;
-      final filteredTags = (newSwagger['tags'] as List?)?.length ?? 0;
-      
-      log.info('$prefix ✓ Generated: $outputPath');
-      log.info('$prefix ✓ Paths: $originalPaths → $filteredPaths, Tags: $originalTags → $filteredTags');
+      log.info('swagger_filter: $prefix Generated $outputPath');
       
     } catch (e, stackTrace) {
-      log.severe('$prefix ✗ Error processing ${swaggerCfg.source}: $e');
-      log.severe('Stack trace: $stackTrace');
+      log.severe('swagger_filter: $prefix Error processing ${swaggerCfg.source}: $e');
+      log.fine('swagger_filter: $prefix Stack trace: $stackTrace');
       rethrow;
     }
   }

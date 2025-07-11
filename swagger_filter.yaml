@@ -1,5 +1,11 @@
+# yaml-language-server: $schema=./schema/swagger_filter_schema.json
+
+# Swagger Filter Configuration
+# This file uses JSON Schema for validation and IDE support
+
+output_dir: "./filtered"
+
 swaggers:
-  - source: ./swaggers/smartOpsPro.json
-    include_paths: ["/workTeam/add"]
-    output: smartOpsPro.filtered.json
-output_dir: ./filtered 
+  - source: "https://raw.githubusercontent.com/epam-cross-platform-lab/swagger-dart-code-generator/master/example/input_folder/pet_service_json.json"
+    include_paths: ["/pet"]
+    output: "pet_service.json" 
