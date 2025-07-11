@@ -49,24 +49,26 @@ Map<String, dynamic> filterPathsAdvanced(
 }) {
   final result = <String, dynamic>{};
   paths.forEach((path, methods) {
-    // includePaths优先
-    if (includePaths != null && !includePaths.any((p) => path.contains(p))) {
-      return;
-    }
-    if (excludePaths != null && excludePaths.any((p) => path.contains(p))) {
-      return;
-    }
-    final filteredMethods = <String, dynamic>{};
-    (methods as Map).forEach((method, op) {
-      // includeTags优先
-      if (includeTags != null &&
-          !((op['tags'] as List?)?.any((tag) => includeTags.contains(tag)) ==
-              true)) {
+    // includePaths优先 - 如果有includePaths，只检查include条件
+    if (includePaths != null) {
+      if (!includePaths.any((p) => path.contains(p))) {
         return;
       }
-      if (excludeTags != null &&
-          ((op['tags'] as List?)?.any((tag) => excludeTags.contains(tag)) ==
-              true)) {
+    } else if (excludePaths != null && excludePaths.any((p) => path.contains(p))) {
+      // 只有在没有includePaths时才检查excludePaths
+      return;
+    }
+    
+    final filteredMethods = <String, dynamic>{};
+    (methods as Map).forEach((method, op) {
+      // includeTags优先 - 如果有includeTags，只检查include条件
+      if (includeTags != null) {
+        if (!((op['tags'] as List?)?.any((tag) => includeTags.contains(tag)) == true)) {
+          return;
+        }
+      } else if (excludeTags != null &&
+          ((op['tags'] as List?)?.any((tag) => excludeTags.contains(tag)) == true)) {
+        // 只有在没有includeTags时才检查excludeTags
         return;
       }
       filteredMethods[method] = op;
@@ -142,8 +144,9 @@ Map<String, dynamic> buildFilteredSwagger(
       
       // 递归收集依赖的schema
       void collectDependentSchemas() {
+        final currentSchemas = List<String>.from(usedSchemas);
         final newSchemas = <String>{};
-        for (final schemaName in usedSchemas) {
+        for (final schemaName in currentSchemas) {
           if (schemas.containsKey(schemaName) && !filteredSchemas.containsKey(schemaName)) {
             filteredSchemas[schemaName] = schemas[schemaName];
             findUsedSchemas(schemas[schemaName]);
@@ -168,8 +171,9 @@ Map<String, dynamic> buildFilteredSwagger(
     
     // 递归收集依赖的definition
     void collectDependentDefinitions() {
+      final currentDefinitions = List<String>.from(usedSchemas);
       final newDefinitions = <String>{};
-      for (final definitionName in usedSchemas) {
+      for (final definitionName in currentDefinitions) {
         if (definitions.containsKey(definitionName) && !filteredDefinitions.containsKey(definitionName)) {
           filteredDefinitions[definitionName] = definitions[definitionName];
           findUsedSchemas(definitions[definitionName]);

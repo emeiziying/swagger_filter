@@ -1,0 +1,31 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Test API",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/workTeam/add": {
+      "post": {
+        "tags": ["workTeam"],
+        "summary": "新增工作组",
+        "responses": {
+          "200": {
+            "description": "成功"
+          }
+        }
+      }
+    },
+    "/user/login": {
+      "post": {
+        "tags": ["user"],
+        "summary": "用户登录",
+        "responses": {
+          "200": {
+            "description": "成功"
+          }
+        }
+      }
+    }
+  }
+} 

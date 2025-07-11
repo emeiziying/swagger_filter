@@ -15,6 +15,6 @@ builders:
       options:
         output_dir: "./filtered"
         swaggers:
-          - source: "./swaggers/smartOpsPro.json"
-            include_paths: ["/workTeam/add"]
-            output: "smartOpsPro.filtered.json" 
+          - source: "https://raw.githubusercontent.com/epam-cross-platform-lab/swagger-dart-code-generator/master/example/input_folder/pet_service_json.json"
+            include_paths: ["/pet"]
+            output: "pet_service.json" 
