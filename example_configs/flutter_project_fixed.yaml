@@ -1,0 +1,37 @@
+# 修正后的Flutter项目build.yaml配置
+targets:
+  $default:
+    sources:
+      - lib/**
+      - swaggers/**
+      - $package$
+    builders:
+      # 正确的builder引用格式：package_name|builder_name
+      swagger_filter|swagger_filter:
+        enabled: true
+        options:
+          # 输出目录建议放在generated下而不是lib下
+          output_dir: "generated/swaggers"
+          # swagger源配置
+          swaggers:
+            - source: "https://raw.githubusercontent.com/epam-cross-platform-lab/swagger-dart-code-generator/master/example/input_folder/pet_service_json.json"
+              include_paths: ["/pet"]
+              output: "pet_service.json"
+            # 可以添加多个swagger源
+            - source: "https://petstore.swagger.io/v2/swagger.json"
+              include_tags: ["pet", "store"]
+              exclude_paths: ["/user"]
+              output: "petstore_filtered.json"
+
+# 可选：如果需要自定义builder行为
+builders:
+  swagger_filter:
+    import: "package:swagger_filter/builder.dart"
+    builder_factories: ["swaggerFilterBuilder"]
+    build_extensions: {".dart": [".swagger_filtered"]}
+    auto_apply: root_package
+    build_to: source
+    defaults:
+      options:
+        # 默认配置，会被targets中的options覆盖
+        output_dir: "./generated" 
