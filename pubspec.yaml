@@ -1,6 +1,6 @@
 name: swagger_filter
 description: A powerful tool to filter and extract specific APIs from Swagger/OpenAPI documents, supporting both OpenAPI 2.0 and 3.0 formats.
-version: 1.0.1
+version: 1.0.2
 homepage: https://github.com/emeiziying/swagger_filter
 repository: https://github.com/emeiziying/swagger_filter
 
