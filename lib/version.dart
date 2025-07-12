@@ -6,4 +6,8 @@ const String packageName = 'swagger_filter';
 String getVersionInfo() {
   return '$packageName v$packageVersion';
 }
+
 // test comment
+void testFunction() {
+  print('hello');
+}
