@@ -7,17 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Added
-- 🚀 Enhanced build trigger mechanism using `$lib$` for better performance
-- ⚡ Automatic execution order with swagger_dart_code_generator  
-- 🎯 Smart configuration detection (YAML file + build.yaml fallback)
-- 💡 Helpful error messages with solution suggestions
+## [1.0.1] - 2024-12-19
 
-### Changed
-- ⚡ Optimized builder to only process specific configuration files
-- 🔄 Improved configuration reading with dual-source support
-- 🏗️ Better build_extensions configuration for reliable triggering
-- 🧹 Simplified logging output for cleaner build experience
+### 🔧 Bug Fixes
+- Fixed CI/CD pipeline failures due to missing swagger configuration
+- Resolved Dart analyzer issues (unused methods, constructor optimizations)
+- Fixed code formatting compliance with dart format
+- Enhanced builder to gracefully handle missing configurations instead of throwing exceptions
+
+### 🚀 Improvements
+- Added automatic code formatting with Git pre-commit hooks
+- Improved error handling and logging messages
+- Enhanced builder stability for CI/CD environments
+- Better configuration validation and fallback handling
+
+### 🛠️ Developer Experience
+- Automatic code formatting on commit via pre-commit hooks
+- Better error messages when configuration is missing
+- Cleaner codebase with resolved lint issues
+- Improved CI/CD reliability
+
+### 📝 Code Quality
+- Removed unused private methods
+- Optimized constructors with super parameters
+- Fixed string interpolation formatting
+- Enhanced null safety handling
 
 ## [1.0.1] - 2024-12-19
 
