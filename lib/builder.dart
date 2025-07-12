@@ -31,6 +31,12 @@ class SwaggerFilterBuilder implements Builder {
       // 从YAML文件或build options读取配置
       final config = await _parseConfigFromInput(buildStep);
 
+      // 如果没有配置，跳过处理
+      if (config == null) {
+        log.fine('swagger_filter: No configuration found, skipping processing');
+        return;
+      }
+
       final validation = SwaggerFilterValidator.validateConfig(config);
 
       if (!validation.isValid) {
@@ -63,7 +69,7 @@ class SwaggerFilterBuilder implements Builder {
     return filePath.endsWith(r'$lib$');
   }
 
-  Future<SwaggerFilterConfig> _parseConfigFromInput(BuildStep buildStep) async {
+  Future<SwaggerFilterConfig?> _parseConfigFromInput(BuildStep buildStep) async {
     // 首先尝试查找 swagger_filter.yaml 文件
     try {
       final yamlAssetId =
@@ -114,13 +120,14 @@ class SwaggerFilterBuilder implements Builder {
     }
   }
 
-  SwaggerFilterConfig _parseConfigFromBuildOptions() {
+  SwaggerFilterConfig? _parseConfigFromBuildOptions() {
     final swaggersConfig = options.config['swaggers'] as List?;
     final outputDir = options.config['output_dir'] as String?;
 
     if (swaggersConfig == null || swaggersConfig.isEmpty) {
-      throw BuildException(
-          'No swaggers configured in build.yaml. Please add swagger sources under options.swaggers');
+      // 在开发模式下，如果没有配置就跳过处理，不抛出异常
+      log.fine('swagger_filter: No swaggers configured in build.yaml, skipping processing');
+      return null;
     }
 
     try {
