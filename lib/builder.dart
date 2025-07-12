@@ -15,7 +15,7 @@ class SwaggerFilterBuilder implements Builder {
 
   @override
   final buildExtensions = const {
-    r'$lib$': ['.swagger_filter_done']
+    r'$lib$': ['.json']
   };
 
   @override

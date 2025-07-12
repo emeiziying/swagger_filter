@@ -9,11 +9,11 @@ builders:
     import: "package:swagger_filter/builder.dart"
     builder_factories: ["swaggerFilterBuilder"]
     build_extensions: {
-      "$lib$": [".swagger_filter_done"]
+      "$lib$": [".json"]
     }
     auto_apply: dependents
     build_to: source
-    runs_before: ["swagger_dart_code_generator|swagger"]
+    runs_before: ["swagger_dart_code_generator"]
     defaults:
       options:
         output_dir: "./filtered"
