@@ -69,7 +69,8 @@ class SwaggerFilterBuilder implements Builder {
     return filePath.endsWith(r'$lib$');
   }
 
-  Future<SwaggerFilterConfig?> _parseConfigFromInput(BuildStep buildStep) async {
+  Future<SwaggerFilterConfig?> _parseConfigFromInput(
+      BuildStep buildStep) async {
     // 首先尝试查找 swagger_filter.yaml 文件
     try {
       final yamlAssetId =
@@ -126,7 +127,8 @@ class SwaggerFilterBuilder implements Builder {
 
     if (swaggersConfig == null || swaggersConfig.isEmpty) {
       // 在开发模式下，如果没有配置就跳过处理，不抛出异常
-      log.fine('swagger_filter: No swaggers configured in build.yaml, skipping processing');
+      log.fine(
+          'swagger_filter: No swaggers configured in build.yaml, skipping processing');
       return null;
     }
 
