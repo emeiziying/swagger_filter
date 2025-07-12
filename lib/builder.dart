@@ -79,11 +79,6 @@ class SwaggerFilterBuilder implements Builder {
     return _parseConfigFromBuildOptions();
   }
   
-  Future<SwaggerFilterConfig> _parseConfigFromYamlFile(BuildStep buildStep) async {
-    final yamlContent = await buildStep.readAsString(buildStep.inputId);
-    return await _parseConfigFromYamlContent(yamlContent);
-  }
-  
   Future<SwaggerFilterConfig> _parseConfigFromYamlContent(String yamlContent) async {
     final yamlDoc = loadYaml(yamlContent);
     

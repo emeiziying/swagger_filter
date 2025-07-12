@@ -10,14 +10,15 @@ class ValidationResult {
   final bool isValid;
 
   ValidationResult({
-    this.errors = const [],
-    this.warnings = const [],
+    required this.errors,
+    required this.warnings,
   }) : isValid = errors.isEmpty;
 
-  ValidationResult.success() : errors = const [], warnings = const [], isValid = true;
-  
-  ValidationResult.failure(List<String> errors, [List<String>? warnings])
-      : errors = errors, warnings = warnings ?? const [], isValid = false;
+  ValidationResult.success()
+      : errors = const [], warnings = const [], isValid = true;
+
+  ValidationResult.failure(this.errors, [List<String>? warnings])
+      : warnings = warnings ?? const [], isValid = errors.isEmpty;
 
   /// Combine multiple validation results
   ValidationResult operator +(ValidationResult other) {
@@ -213,7 +214,7 @@ class SwaggerFilterValidator {
         warnings.add('Created output directory: $outputDir');
       } else {
         // Check if writable
-        final testFile = File('${outputDir}/.write_test');
+        final testFile = File('$outputDir/.write_test');
         testFile.writeAsStringSync('test');
         testFile.deleteSync();
       }
