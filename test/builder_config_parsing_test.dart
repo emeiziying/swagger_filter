@@ -22,20 +22,20 @@ output_dir: "./test_output"
 
       final yamlDoc = loadYaml(yamlContent);
       final config = Map<String, dynamic>.from(yamlDoc);
-      
+
       // 验证基本结构
       expect(config['output_dir'], equals('./test_output'));
       expect(config['swaggers'], isA<List>());
-      
+
       final swaggersConfig = config['swaggers'] as List;
       expect(swaggersConfig.length, equals(1));
-      
+
       // 验证swagger源配置
       final swaggerSource = SwaggerSourceConfig.fromMap(
-        Map<String, dynamic>.from(swaggersConfig[0])
-      );
-      
-      expect(swaggerSource.source, equals('https://api.example.com/swagger.json'));
+          Map<String, dynamic>.from(swaggersConfig[0]));
+
+      expect(
+          swaggerSource.source, equals('https://api.example.com/swagger.json'));
       expect(swaggerSource.output, equals('filtered_api.json'));
       expect(swaggerSource.includePaths, contains('/api/v1/users'));
       expect(swaggerSource.includePaths, contains('/api/v1/auth'));
@@ -52,13 +52,13 @@ swaggers:
 
       final yamlDoc = loadYaml(yamlContent);
       final config = Map<String, dynamic>.from(yamlDoc);
-      
+
       final swaggersConfig = config['swaggers'] as List;
       final swaggerSource = SwaggerSourceConfig.fromMap(
-        Map<String, dynamic>.from(swaggersConfig[0])
-      );
-      
-      expect(swaggerSource.source, equals('https://api.example.com/swagger.json'));
+          Map<String, dynamic>.from(swaggersConfig[0]));
+
+      expect(
+          swaggerSource.source, equals('https://api.example.com/swagger.json'));
       expect(swaggerSource.output, isNull);
       expect(swaggerSource.includePaths, isNull);
       expect(swaggerSource.excludePaths, isNull);
@@ -84,28 +84,25 @@ output_dir: "./filtered"
 
       final yamlDoc = loadYaml(yamlContent);
       final config = Map<String, dynamic>.from(yamlDoc);
-      
+
       final swaggersConfig = config['swaggers'] as List;
       expect(swaggersConfig.length, equals(3));
-      
+
       // 验证第一个源
       final source1 = SwaggerSourceConfig.fromMap(
-        Map<String, dynamic>.from(swaggersConfig[0])
-      );
+          Map<String, dynamic>.from(swaggersConfig[0]));
       expect(source1.source, equals('https://api.example.com/v1/swagger.json'));
       expect(source1.output, equals('v1_api.json'));
-      
+
       // 验证第二个源
       final source2 = SwaggerSourceConfig.fromMap(
-        Map<String, dynamic>.from(swaggersConfig[1])
-      );
+          Map<String, dynamic>.from(swaggersConfig[1]));
       expect(source2.source, equals('https://api.example.com/v2/swagger.json'));
       expect(source2.output, equals('v2_api.json'));
-      
+
       // 验证第三个源（本地文件）
       final source3 = SwaggerSourceConfig.fromMap(
-        Map<String, dynamic>.from(swaggersConfig[2])
-      );
+          Map<String, dynamic>.from(swaggersConfig[2]));
       expect(source3.source, equals('./local_swagger.yaml'));
       expect(source3.output, equals('local_api.json'));
       expect(source3.includeTags, contains('local'));
@@ -134,17 +131,16 @@ swaggers:
 
       final yamlDoc = loadYaml(yamlContent);
       final config = Map<String, dynamic>.from(yamlDoc);
-      
+
       final swaggersConfig = config['swaggers'] as List;
       final swaggerSource = SwaggerSourceConfig.fromMap(
-        Map<String, dynamic>.from(swaggersConfig[0])
-      );
-      
+          Map<String, dynamic>.from(swaggersConfig[0]));
+
       expect(swaggerSource.includePaths?.length, equals(3));
       expect(swaggerSource.excludePaths?.length, equals(2));
       expect(swaggerSource.includeTags?.length, equals(3));
       expect(swaggerSource.excludeTags?.length, equals(3));
-      
+
       expect(swaggerSource.includePaths, contains('/api/v1/users'));
       expect(swaggerSource.excludePaths, contains('/api/v1/admin'));
       expect(swaggerSource.includeTags, contains('public'));
@@ -159,7 +155,7 @@ output_dir: "./empty"
 
       final yamlDoc = loadYaml(yamlContent);
       final config = Map<String, dynamic>.from(yamlDoc);
-      
+
       expect(config['output_dir'], equals('./empty'));
       expect(config['swaggers'], isA<List>());
       expect((config['swaggers'] as List).isEmpty, isTrue);
@@ -175,13 +171,13 @@ swaggers:
 
       final yamlDoc = loadYaml(yamlContent);
       final config = Map<String, dynamic>.from(yamlDoc);
-      
+
       final swaggersConfig = config['swaggers'] as List;
       final swaggerSource = SwaggerSourceConfig.fromMap(
-        Map<String, dynamic>.from(swaggersConfig[0])
-      );
-      
-      expect(swaggerSource.source, equals('https://api.example.com/swagger.json'));
+          Map<String, dynamic>.from(swaggersConfig[0]));
+
+      expect(
+          swaggerSource.source, equals('https://api.example.com/swagger.json'));
       expect(swaggerSource.includePaths, contains('/api/v1/users'));
       expect(swaggerSource.output, isNull);
       expect(swaggerSource.excludePaths, isNull);
@@ -206,7 +202,8 @@ swaggers:
 
       expect(config.swaggers.length, equals(1));
       expect(config.outputDir, equals('./test_output'));
-      expect(config.swaggers[0].source, equals('https://api.example.com/swagger.json'));
+      expect(config.swaggers[0].source,
+          equals('https://api.example.com/swagger.json'));
     });
   });
-} 
+}

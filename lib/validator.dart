@@ -15,10 +15,13 @@ class ValidationResult {
   }) : isValid = errors.isEmpty;
 
   ValidationResult.success()
-      : errors = const [], warnings = const [], isValid = true;
+      : errors = const [],
+        warnings = const [],
+        isValid = true;
 
   ValidationResult.failure(this.errors, [List<String>? warnings])
-      : warnings = warnings ?? const [], isValid = errors.isEmpty;
+      : warnings = warnings ?? const [],
+        isValid = errors.isEmpty;
 
   /// Combine multiple validation results
   ValidationResult operator +(ValidationResult other) {
@@ -37,10 +40,11 @@ class SwaggerFilterValidator {
   /// Validate a complete swagger filter configuration
   static ValidationResult validateConfig(SwaggerFilterConfig config) {
     var result = ValidationResult.success();
-    
+
     // Validate basic structure
     if (config.swaggers.isEmpty) {
-      return ValidationResult.failure(['Configuration must contain at least one swagger source']);
+      return ValidationResult.failure(
+          ['Configuration must contain at least one swagger source']);
     }
 
     // Validate each swagger source
@@ -59,7 +63,8 @@ class SwaggerFilterValidator {
   }
 
   /// Validate a single swagger source configuration
-  static ValidationResult validateSwaggerSource(SwaggerSourceConfig config, int index) {
+  static ValidationResult validateSwaggerSource(
+      SwaggerSourceConfig config, int index) {
     final errors = <String>[];
     final warnings = <String>[];
 
@@ -74,15 +79,20 @@ class SwaggerFilterValidator {
     final hasIncludeTags = config.includeTags?.isNotEmpty == true;
     final hasExcludeTags = config.excludeTags?.isNotEmpty == true;
 
-    if (!hasIncludePaths && !hasExcludePaths && !hasIncludeTags && !hasExcludeTags) {
-      warnings.add('Source $index: No filtering criteria specified, all paths will be included');
+    if (!hasIncludePaths &&
+        !hasExcludePaths &&
+        !hasIncludeTags &&
+        !hasExcludeTags) {
+      warnings.add(
+          'Source $index: No filtering criteria specified, all paths will be included');
     }
 
     // Validate output filename
     if (config.output != null) {
       final outputResult = validateOutputFilename(config.output!);
       errors.addAll(outputResult.errors.map((e) => 'Source $index output: $e'));
-      warnings.addAll(outputResult.warnings.map((w) => 'Source $index output: $w'));
+      warnings
+          .addAll(outputResult.warnings.map((w) => 'Source $index output: $w'));
     }
 
     // Validate path patterns
@@ -92,7 +102,8 @@ class SwaggerFilterValidator {
           errors.add('Source $index: Empty include path pattern');
         }
         if (path.contains('..')) {
-          warnings.add('Source $index: Path pattern "$path" contains "..", this might be overly broad');
+          warnings.add(
+              'Source $index: Path pattern "$path" contains "..", this might be overly broad');
         }
       }
     }
@@ -141,12 +152,13 @@ class SwaggerFilterValidator {
 
     // Security checks
     if (uri.scheme == 'http') {
-      warnings.add('Using HTTP instead of HTTPS - data will be transmitted unencrypted');
+      warnings.add(
+          'Using HTTP instead of HTTPS - data will be transmitted unencrypted');
     }
 
     // Check for localhost/private IPs (potential SSRF)
-    if (uri.host == 'localhost' || 
-        uri.host == '127.0.0.1' || 
+    if (uri.host == 'localhost' ||
+        uri.host == '127.0.0.1' ||
         uri.host.startsWith('192.168.') ||
         uri.host.startsWith('10.') ||
         uri.host.startsWith('172.16.') ||
@@ -156,7 +168,8 @@ class SwaggerFilterValidator {
         uri.host.startsWith('172.2') ||
         uri.host.startsWith('172.30.') ||
         uri.host.startsWith('172.31.')) {
-      warnings.add('URL points to private/local network - ensure this is intended');
+      warnings
+          .add('URL points to private/local network - ensure this is intended');
     }
 
     return ValidationResult(errors: errors, warnings: warnings);
@@ -168,7 +181,8 @@ class SwaggerFilterValidator {
 
     // Security: Check for path traversal
     if (path.contains('..')) {
-      errors.add('Path contains ".." which could lead to path traversal attacks');
+      errors
+          .add('Path contains ".." which could lead to path traversal attacks');
     }
 
     // Check if file exists
@@ -186,10 +200,11 @@ class SwaggerFilterValidator {
     }
 
     // Check file extension
-    if (!path.toLowerCase().endsWith('.json') && 
-        !path.toLowerCase().endsWith('.yaml') && 
+    if (!path.toLowerCase().endsWith('.json') &&
+        !path.toLowerCase().endsWith('.yaml') &&
         !path.toLowerCase().endsWith('.yml')) {
-      warnings.add('File extension suggests it may not be a swagger/OpenAPI document');
+      warnings.add(
+          'File extension suggests it may not be a swagger/OpenAPI document');
     }
 
     return ValidationResult(errors: errors, warnings: warnings);
@@ -202,7 +217,8 @@ class SwaggerFilterValidator {
 
     // Security: Check for path traversal
     if (outputDir.contains('..')) {
-      errors.add('Output directory contains ".." which could lead to path traversal');
+      errors.add(
+          'Output directory contains ".." which could lead to path traversal');
     }
 
     // Check if directory can be created
@@ -251,7 +267,8 @@ class SwaggerFilterValidator {
   }
 
   /// Validate that a swagger document is structurally correct
-  static ValidationResult validateSwaggerDocument(Map<String, dynamic> swagger) {
+  static ValidationResult validateSwaggerDocument(
+      Map<String, dynamic> swagger) {
     final errors = <String>[];
     final warnings = <String>[];
 
@@ -270,14 +287,16 @@ class SwaggerFilterValidator {
       if (version == null) {
         errors.add('OpenAPI version must be a string');
       } else if (!version.startsWith('3.')) {
-        warnings.add('OpenAPI version $version - only 3.x has been thoroughly tested');
+        warnings.add(
+            'OpenAPI version $version - only 3.x has been thoroughly tested');
       }
     } else if (swagger.containsKey('swagger')) {
       final version = swagger['swagger'] as String?;
       if (version == null) {
         errors.add('Swagger version must be a string');
       } else if (version != '2.0') {
-        warnings.add('Swagger version $version - only 2.0 has been thoroughly tested');
+        warnings.add(
+            'Swagger version $version - only 2.0 has been thoroughly tested');
       }
     } else {
       errors.add('Document must specify either "openapi" or "swagger" version');
@@ -285,4 +304,4 @@ class SwaggerFilterValidator {
 
     return ValidationResult(errors: errors, warnings: warnings);
   }
-} 
+}

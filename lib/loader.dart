@@ -24,4 +24,4 @@ Future<Map<String, dynamic>> loadSwaggerFlexible(String pathOrUrl) async {
       return Map<String, dynamic>.from(loadYaml(content));
     }
   }
-} 
+}

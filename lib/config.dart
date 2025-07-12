@@ -47,4 +47,4 @@ class SwaggerFilterConfig {
       outputDir: yaml['output_dir'] as String?,
     );
   }
-} 
+}

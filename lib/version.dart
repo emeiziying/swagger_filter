@@ -5,4 +5,4 @@ const String packageName = 'swagger_filter';
 /// Display version information
 String getVersionInfo() {
   return '$packageName v$packageVersion';
-} 
+}

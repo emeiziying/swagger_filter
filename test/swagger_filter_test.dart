@@ -72,11 +72,15 @@ void main() {
           },
           'UserSettings': {
             'type': 'object',
-            'properties': {'theme': {'type': 'string'}}
+            'properties': {
+              'theme': {'type': 'string'}
+            }
           },
           'CreateUser': {
             'type': 'object',
-            'properties': {'name': {'type': 'string'}}
+            'properties': {
+              'name': {'type': 'string'}
+            }
           },
           'UnusedSchema': {'type': 'object'}
         }
@@ -89,16 +93,14 @@ void main() {
       ]
     };
 
-    
-
-         test('filterPaths - by includePaths only', () {
-       final filtered = filterPaths(
-         sampleOpenAPI3['paths'] as Map<String, dynamic>,
-         includePaths: ['/user/profile'],
-       );
-       expect(filtered.keys, contains('/user/profile'));
-       expect(filtered.keys, hasLength(1));
-     });
+    test('filterPaths - by includePaths only', () {
+      final filtered = filterPaths(
+        sampleOpenAPI3['paths'] as Map<String, dynamic>,
+        includePaths: ['/user/profile'],
+      );
+      expect(filtered.keys, contains('/user/profile'));
+      expect(filtered.keys, hasLength(1));
+    });
 
     test('filterPaths - by includeTags only', () {
       final filtered = filterPaths(
@@ -120,15 +122,17 @@ void main() {
       expect(filtered.keys, hasLength(1));
     });
 
-         test('filterPathsAdvanced - include priority over exclude', () {
-       final filtered = filterPathsAdvanced(
-         sampleOpenAPI3['paths'] as Map<String, dynamic>,
-         includePaths: ['/user/profile'],
-         excludePaths: ['/user/profile'], // should be ignored due to include priority
-       );
-       expect(filtered.keys, contains('/user/profile'));
-       expect(filtered.keys, hasLength(1));
-     });
+    test('filterPathsAdvanced - include priority over exclude', () {
+      final filtered = filterPathsAdvanced(
+        sampleOpenAPI3['paths'] as Map<String, dynamic>,
+        includePaths: ['/user/profile'],
+        excludePaths: [
+          '/user/profile'
+        ], // should be ignored due to include priority
+      );
+      expect(filtered.keys, contains('/user/profile'));
+      expect(filtered.keys, hasLength(1));
+    });
 
     test('filterPathsAdvanced - exclude paths', () {
       final filtered = filterPathsAdvanced(
@@ -165,10 +169,18 @@ void main() {
   group('精准路径匹配测试', () {
     test('精确路径匹配', () {
       final paths = {
-        '/users': {'get': {'summary': 'Get users'}},
-        '/users/123': {'get': {'summary': 'Get user by ID'}},
-        '/user': {'get': {'summary': 'Get current user'}},
-        '/users-admin': {'get': {'summary': 'Admin users'}},
+        '/users': {
+          'get': {'summary': 'Get users'}
+        },
+        '/users/123': {
+          'get': {'summary': 'Get user by ID'}
+        },
+        '/user': {
+          'get': {'summary': 'Get current user'}
+        },
+        '/users-admin': {
+          'get': {'summary': 'Admin users'}
+        },
       };
 
       // 精确匹配 "/users" 应该只匹配 "/users"
@@ -185,11 +197,21 @@ void main() {
 
     test('精确匹配验证', () {
       final paths = {
-        '/api': {'get': {'summary': 'API root'}},
-        '/api/v1/users': {'get': {'summary': 'V1 users'}},
-        '/api/v2/users': {'get': {'summary': 'V2 users'}},
-        '/api-docs': {'get': {'summary': 'API docs'}},
-        '/apikey': {'get': {'summary': 'API key'}},
+        '/api': {
+          'get': {'summary': 'API root'}
+        },
+        '/api/v1/users': {
+          'get': {'summary': 'V1 users'}
+        },
+        '/api/v2/users': {
+          'get': {'summary': 'V2 users'}
+        },
+        '/api-docs': {
+          'get': {'summary': 'API docs'}
+        },
+        '/apikey': {
+          'get': {'summary': 'API key'}
+        },
       };
 
       // "/api" 应该只匹配 "/api"，不匹配子路径
@@ -207,12 +229,24 @@ void main() {
 
     test('多个精准路径匹配', () {
       final paths = {
-        '/users': {'get': {'summary': 'Users'}},
-        '/users/profile': {'get': {'summary': 'User profile'}},
-        '/admin': {'get': {'summary': 'Admin'}},
-        '/admin/users': {'get': {'summary': 'Admin users'}},
-        '/public': {'get': {'summary': 'Public'}},
-        '/public-api': {'get': {'summary': 'Public API'}},
+        '/users': {
+          'get': {'summary': 'Users'}
+        },
+        '/users/profile': {
+          'get': {'summary': 'User profile'}
+        },
+        '/admin': {
+          'get': {'summary': 'Admin'}
+        },
+        '/admin/users': {
+          'get': {'summary': 'Admin users'}
+        },
+        '/public': {
+          'get': {'summary': 'Public'}
+        },
+        '/public-api': {
+          'get': {'summary': 'Public API'}
+        },
       };
 
       final filtered = filterPathsAdvanced(
@@ -229,9 +263,15 @@ void main() {
 
     test('根路径匹配', () {
       final paths = {
-        '/': {'get': {'summary': 'Root'}},
-        '/health': {'get': {'summary': 'Health check'}},
-        '/api': {'get': {'summary': 'API'}},
+        '/': {
+          'get': {'summary': 'Root'}
+        },
+        '/health': {
+          'get': {'summary': 'Health check'}
+        },
+        '/api': {
+          'get': {'summary': 'API'}
+        },
       };
 
       // 根路径应该只匹配 "/"
@@ -247,11 +287,21 @@ void main() {
 
     test('exclude路径精准匹配', () {
       final paths = {
-        '/users': {'get': {'summary': 'Users'}},
-        '/users/admin': {'get': {'summary': 'User admin'}},
-        '/admin': {'get': {'summary': 'Admin'}},
-        '/admin/config': {'get': {'summary': 'Admin config'}},
-        '/admins': {'get': {'summary': 'Admins list'}},
+        '/users': {
+          'get': {'summary': 'Users'}
+        },
+        '/users/admin': {
+          'get': {'summary': 'User admin'}
+        },
+        '/admin': {
+          'get': {'summary': 'Admin'}
+        },
+        '/admin/config': {
+          'get': {'summary': 'Admin config'}
+        },
+        '/admins': {
+          'get': {'summary': 'Admins list'}
+        },
       };
 
       // 排除 "/admin" 应该只排除 "/admin"
@@ -260,7 +310,8 @@ void main() {
         excludePaths: ['/admin'],
       );
 
-      expect(filtered.keys, containsAll(['/users', '/users/admin', '/admin/config', '/admins']));
+      expect(filtered.keys,
+          containsAll(['/users', '/users/admin', '/admin/config', '/admins']));
       expect(filtered.keys, isNot(contains('/admin')));
     });
   });
@@ -301,7 +352,9 @@ void main() {
           },
           'UserSettings': {
             'type': 'object',
-            'properties': {'theme': {'type': 'string'}}
+            'properties': {
+              'theme': {'type': 'string'}
+            }
           },
           'UnusedSchema': {'type': 'object'},
           'AnotherUnused': {'type': 'object'}
@@ -314,22 +367,23 @@ void main() {
       ]
     };
 
-         test('buildFilteredSwagger - OpenAPI 3.0 schema cleanup', () {
-       final filteredPaths = {
-         '/users': (testSwagger['paths'] as Map<String, dynamic>)['/users']
-       };
+    test('buildFilteredSwagger - OpenAPI 3.0 schema cleanup', () {
+      final filteredPaths = {
+        '/users': (testSwagger['paths'] as Map<String, dynamic>)['/users']
+      };
       final result = buildFilteredSwagger(testSwagger, filteredPaths);
-      
+
       // Check paths
       expect(result['paths'].keys, contains('/users'));
-      
+
       // Check tags cleanup
       expect(result['tags'], hasLength(1));
       expect(result['tags'][0]['name'], equals('user'));
-      
+
       // Check schema cleanup - should include User, UserProfile, UserSettings but not unused ones
       final schemas = result['components']['schemas'] as Map;
-      expect(schemas.keys, containsAll(['User', 'UserProfile', 'UserSettings']));
+      expect(
+          schemas.keys, containsAll(['User', 'UserProfile', 'UserSettings']));
       expect(schemas.keys, isNot(contains('UnusedSchema')));
       expect(schemas.keys, isNot(contains('AnotherUnused')));
       expect(schemas.keys, hasLength(3));
@@ -367,11 +421,11 @@ void main() {
         ]
       };
 
-             final filteredPaths = {
-         '/users': (swagger2['paths'] as Map<String, dynamic>)['/users']
-       };
+      final filteredPaths = {
+        '/users': (swagger2['paths'] as Map<String, dynamic>)['/users']
+      };
       final result = buildFilteredSwagger(swagger2, filteredPaths);
-      
+
       // Check definitions cleanup
       final definitions = result['definitions'] as Map;
       expect(definitions.keys, containsAll(['User', 'UserProfile']));
@@ -381,10 +435,10 @@ void main() {
 
     test('buildFilteredSwagger - empty filtered paths', () {
       final result = buildFilteredSwagger(testSwagger, {});
-      
+
       expect(result['paths'], isEmpty);
       expect(result['tags'], isEmpty);
-      
+
       if (result['components'] != null) {
         final schemas = result['components']['schemas'] as Map?;
         expect(schemas, isEmpty);
@@ -393,12 +447,12 @@ void main() {
   });
 
   group('File Loading Tests', () {
-         test('loadSwagger - JSON file', () {
-       final swagger = loadSwagger('test/test_swagger.json');
-       expect(swagger, isNotEmpty);
-       expect(swagger.keys, contains('paths'));
-       expect(swagger.keys, contains('info'));
-     });
+    test('loadSwagger - JSON file', () {
+      final swagger = loadSwagger('test/test_swagger.json');
+      expect(swagger, isNotEmpty);
+      expect(swagger.keys, contains('paths'));
+      expect(swagger.keys, contains('info'));
+    });
 
     test('loadSwagger - file not found', () {
       expect(
@@ -418,7 +472,7 @@ void main() {
         'exclude_tags': ['private'],
         'output': 'filtered.json'
       };
-      
+
       final config = SwaggerSourceConfig.fromMap(map);
       expect(config.source, equals('./test.json'));
       expect(config.includePaths, equals(['/api/v1']));
@@ -431,7 +485,7 @@ void main() {
     test('SwaggerSourceConfig.fromMap - minimal config', () {
       final map = {'source': './test.json'};
       final config = SwaggerSourceConfig.fromMap(map);
-      
+
       expect(config.source, equals('./test.json'));
       expect(config.includePaths, isNull);
       expect(config.excludePaths, isNull);
@@ -455,14 +509,14 @@ output_dir: ./filtered_test
 
       try {
         final config = SwaggerFilterConfig.fromYamlFile('test_config.yaml');
-        
+
         expect(config.swaggers, hasLength(2));
         expect(config.outputDir, equals('./filtered_test'));
-        
+
         expect(config.swaggers[0].source, equals('./test1.json'));
         expect(config.swaggers[0].includePaths, equals(['/api']));
         expect(config.swaggers[0].output, equals('test1.filtered.json'));
-        
+
         expect(config.swaggers[1].source, equals('./test2.json'));
         expect(config.swaggers[1].includeTags, equals(['public']));
       } finally {
@@ -478,16 +532,16 @@ output_dir: ./filtered_test
         'info': {'title': 'Test', 'version': '1.0.0'},
         'paths': {}
       };
-      
+
       final testFile = File('test_output.json');
-      
+
       try {
         saveSwagger(testSwagger, 'test_output.json');
-        
+
         expect(testFile.existsSync(), isTrue);
         final content = testFile.readAsStringSync();
         final parsed = jsonDecode(content);
-        
+
         expect(parsed['openapi'], equals('3.0.0'));
         expect(parsed['info']['title'], equals('Test'));
       } finally {
@@ -498,28 +552,28 @@ output_dir: ./filtered_test
     });
   });
 
-     group('Integration Tests with Real Swagger', () {
-     final testSwaggerPath = 'test/test_swagger.json';
-     late Map<String, dynamic> swagger;
+  group('Integration Tests with Real Swagger', () {
+    final testSwaggerPath = 'test/test_swagger.json';
+    late Map<String, dynamic> swagger;
 
-     setUpAll(() {
-       swagger = loadSwagger(testSwaggerPath);
-     });
+    setUpAll(() {
+      swagger = loadSwagger(testSwaggerPath);
+    });
 
     test('extract specific API - /workTeam/add', () {
       final filtered = filterPathsAdvanced(
         swagger['paths'] as Map<String, dynamic>,
         includePaths: ['/workTeam/add'],
       );
-      
+
       expect(filtered.keys, contains('/workTeam/add'));
       expect(filtered['/workTeam/add'], isNotNull);
       expect(filtered['/workTeam/add'].keys, contains('post'));
-      
+
       final newSwagger = buildFilteredSwagger(swagger, filtered);
       expect(newSwagger['paths'].keys, contains('/workTeam/add'));
       expect(newSwagger['paths']['/workTeam/add'].keys, contains('post'));
-      
+
       // Check that the operation details are preserved
       final operation = newSwagger['paths']['/workTeam/add']['post'];
       expect(operation['summary'], isNotNull);
@@ -531,28 +585,31 @@ output_dir: ./filtered_test
         swagger['paths'] as Map<String, dynamic>,
         includePaths: ['/workTeam/add', '/user/login'],
       );
-      
+
       expect(filtered.keys.length, greaterThanOrEqualTo(1));
       expect(filtered.keys, contains('/workTeam/add'));
     });
 
     test('exclude sensitive endpoints', () {
       final allPaths = swagger['paths'] as Map<String, dynamic>;
-      
+
       // 找到实际存在的路径进行精确排除测试
-      final pathsToExclude = allPaths.keys.where((path) => 
-        path.contains('admin') || path.contains('internal') || path.contains('debug')
-      ).toList();
-      
+      final pathsToExclude = allPaths.keys
+          .where((path) =>
+              path.contains('admin') ||
+              path.contains('internal') ||
+              path.contains('debug'))
+          .toList();
+
       if (pathsToExclude.isNotEmpty) {
         final filtered = filterPathsAdvanced(
           allPaths,
           excludePaths: pathsToExclude,
         );
-        
+
         // Should have fewer paths than original
         expect(filtered.keys.length, lessThan(allPaths.keys.length));
-        
+
         // Should not contain any of the excluded paths
         for (final excludedPath in pathsToExclude) {
           expect(filtered.keys, isNot(contains(excludedPath)));
@@ -570,22 +627,21 @@ output_dir: ./filtered_test
     test('full workflow - filter and save', () {
       final filtered = filterPathsAdvanced(
         swagger['paths'] as Map<String, dynamic>,
-        includePaths: ['/workTeam/add'],  // 使用精确的路径
+        includePaths: ['/workTeam/add'], // 使用精确的路径
       );
-      
+
       final newSwagger = buildFilteredSwagger(swagger, filtered);
       final outputFile = File('test_filtered_output.json');
-      
+
       try {
         saveSwagger(newSwagger, outputFile.path);
-        
+
         expect(outputFile.existsSync(), isTrue);
-        
+
         // Verify the saved file can be loaded back
         final reloaded = loadSwagger(outputFile.path);
         expect(reloaded['paths'], isNotEmpty);
         expect(reloaded['info'], equals(swagger['info']));
-        
       } finally {
         if (outputFile.existsSync()) {
           outputFile.deleteSync();
@@ -603,10 +659,12 @@ output_dir: ./filtered_test
     test('filterPaths - handles null parameters', () {
       final samplePaths = {
         '/test': {
-          'get': {'tags': ['test']}
+          'get': {
+            'tags': ['test']
+          }
         }
       };
-      
+
       final result = filterPaths(samplePaths);
       expect(result, equals(samplePaths));
     });
@@ -617,7 +675,7 @@ output_dir: ./filtered_test
         'info': {'title': 'Test', 'version': '1.0.0'},
         'paths': {'/test': {}}
       };
-      
+
       final result = buildFilteredSwagger(minimalSwagger, {});
       expect(result['openapi'], equals('3.0.0'));
       expect(result['paths'], isEmpty);
@@ -633,10 +691,12 @@ output_dir: ./filtered_test
           }
         }
       };
-      
-             final filteredPaths = {'/test': (swaggerWithoutTags['paths'] as Map<String, dynamic>)['/test']};
+
+      final filteredPaths = {
+        '/test': (swaggerWithoutTags['paths'] as Map<String, dynamic>)['/test']
+      };
       final result = buildFilteredSwagger(swaggerWithoutTags, filteredPaths);
-      
+
       expect(result['paths'], equals(filteredPaths));
       expect(result.containsKey('tags'), isFalse);
     });

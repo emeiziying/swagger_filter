@@ -31,12 +31,16 @@ class ProcessResult {
     required this.outputPath,
     required this.pathCount,
     required this.tagCount,
-  }) : success = true, error = null;
+  })  : success = true,
+        error = null;
 
   ProcessResult.failure({
     required this.source,
     required this.error,
-  }) : success = false, outputPath = null, pathCount = 0, tagCount = 0;
+  })  : success = false,
+        outputPath = null,
+        pathCount = 0,
+        tagCount = 0;
 }
 
 /// Configuration for processing options
@@ -84,9 +88,9 @@ class SwaggerProcessor {
   ) async {
     try {
       onProgress?.call('Loading: ${swaggerConfig.source}');
-      
+
       final swagger = await _loadWithTimeout(swaggerConfig.source);
-      
+
       onProgress?.call('Filtering: ${swaggerConfig.source}');
       final filtered = filterPathsAdvanced(
         swagger['paths'] as Map<String, dynamic>,
@@ -97,7 +101,7 @@ class SwaggerProcessor {
       );
 
       final newSwagger = buildFilteredSwagger(swagger, filtered);
-      
+
       if (options.dryRun) {
         return ProcessResult.success(
           source: swaggerConfig.source,
@@ -111,7 +115,7 @@ class SwaggerProcessor {
       final outName = swaggerConfig.output ?? p.basename(swaggerConfig.source);
       final outDir = outputDir ?? 'filtered';
       await Directory(outDir).create(recursive: true);
-      
+
       final outputPath = p.join(outDir, outName);
       await File(outputPath).writeAsString(
         _formatOutput(newSwagger),
@@ -123,7 +127,6 @@ class SwaggerProcessor {
         pathCount: filtered.length,
         tagCount: (newSwagger['tags'] as List?)?.length ?? 0,
       );
-
     } catch (e) {
       return ProcessResult.failure(
         source: swaggerConfig.source,
@@ -201,4 +204,4 @@ class Semaphore {
       _currentCount++;
     }
   }
-} 
+}
